@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Assignment 2 Roboter</title>
+    <script type="text/javascript" src="assets/js/libs2022/stats.js"></script>
+    <script type="text/javascript" src="assets/js/libs2022/dat.gui.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="Stats-output"></div>
+    <!-- Div which will hold the Output -->
+    <div id="WebGL-output"></div>
+
+    <!-- Javascript code that runs our Three.js examples -->
+    <script type="module">
+        // Find the latest version by visiting https://cdn.skypack.dev/three.
+
+        import * as THREE from "https://cdn.skypack.dev/three@0.133.1";
+
+        // once everything is loaded, we run our Three.js stuff.
+        function init()
+        {
+            var stats = initStats();
+
+            // create a scene, that will hold all our elements such as objects, cameras and lights.
+            var scene = new THREE.Scene();
+
+            // create a camera, which defines where we're looking at.
+            var camera = new THREE.PerspectiveCamera(
+                45,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+
+            // create a render and set the size
+            var renderer = new THREE.WebGLRenderer();
+
+            renderer.setClearColor(new THREE.Color(0xeeeeee), 1);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+
+            // create the ground plane
+            var planeGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
+            var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.receiveShadow = true;
+
+            // rotate and position the plane
+            //make plane flat
+            plane.rotation.x = -0.5 * Math.PI;
+            plane.position.x = 0;
+            plane.position.y = 0;
+            plane.position.z = 0;
+
+            // add the plane to the scene
+            scene.add(plane);
+
+
+            // position and point the camera to the center of the scene
+            camera.position.x = 0;
+            camera.position.y = 0;
+            camera.position.z = 0;
+
+            //camer look at center of scene
+            camera.lookAt(scene.position);
+
+            // add subtle ambient lighting
+            var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+            scene.add(ambientLight);
+
+            // add spotlight for the shadows
+            var spotLight = new THREE.SpotLight(0xffffff);
+            spotLight.position.set(-40, 60, -10);
+            spotLight.castShadow = true;
+            scene.add(spotLight);
+
+            // add the output of the renderer to the html element
+            document
+                .getElementById("WebGL-output")
+                .appendChild(renderer.domElement);
+
+            // call the render function
+            var step = 0;
+
+
+
+
+            var controls = new (function ()
+            {
+                this.ambientColor = "#0c0c0c";
+                this.spotLightColor = "#ffffff";
+                this.cameraX = -15;
+                this.cameraY = 5;
+                this.cameraZ = 19;
+
+
+            })();
+
+            //create empty array for all the cubes
+            var cubes = [];
+            
+
+            var gui = new dat.GUI();
+            gui.addColor(controls, "ambientColor");
+            gui.addColor(controls, "spotLightColor");
+            gui.add(controls, "cameraX", -100, 100);
+            gui.add(controls, "cameraY", -100, 100);
+            gui.add(controls, "cameraZ", -100, 100);
+            var text =
+            {
+                speed: 'someName'
+            }
+            gui.add(text, 'speed', cubes);
+
+            var temp = createCube(3, 3, 3,0,1,0, 0x00ff00);
+            
+            //add to array
+            cubes.push(temp);
+            camera.lookAt(temp.position);
+        
+            render();
+            console.log(scene.children);
+
+
+
+            //get objec mouse is over
+            function getObjects(x, y, camera, renderer)
+            {
+                var vector = new THREE.Vector3(x, y, 0.5);
+                vector.unproject(camera);
+                var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+                var intersects = ray.intersectObjects(scene.children);
+                return intersects;
+            }
+
+
+
+
+            function render()
+            {
+                stats.update();
+                camera.lookAt(temp.position);
+                
+                //change the color of the ambient light
+                ambientLight.color = new THREE.Color(controls.ambientColor);
+
+                //change the color of the spot light
+                spotLight.color = new THREE.Color(controls.spotLightColor);
+
+                //change the position of the camera
+                camera.position.x = controls.cameraX;
+                camera.position.y = controls.cameraY;
+                camera.position.z = controls.cameraZ;
+
+                // render using requestAnimationFrame
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+            }
+
+            function initStats()
+            {
+                var stats = new Stats();
+
+                stats.setMode(0); // 0: fps, 1: ms
+
+                // Align top-left
+                stats.domElement.style.position = "absolute";
+                stats.domElement.style.left = "0px";
+                stats.domElement.style.top = "0px";
+
+                document.getElementById("Stats-output").appendChild(stats.domElement);
+
+                return stats;
+            }
+
+
+            //function to Create Cube with Three.js
+            function createCube(size_x, size_y, size_z,position_x,position_y,position_z, color)
+            {
+                var geometry = new THREE.BoxGeometry(size_x, size_y, size_z);
+                var material = new THREE.MeshLambertMaterial({ color: color });
+                var cube = new THREE.Mesh(geometry, material);
+                cube.castShadow = true;
+                //set position of cube
+                cube.position.x = position_x;
+                cube.position.y = position_y;
+                cube.position.z = position_z;
+                //add cube to scene
+                scene.add(cube);
+                return cube;
+            }
+
+            //function return all cubes in scene
+            function getCubes(scene)
+            {
+                var cubes = [];
+
+                //for all objects in scene
+                for (var i = 0; i < scene.children.length; i++)
+                {
+                    //if object is a cube
+                    if (scene.children[i].geometry.type == "BoxGeometry")
+                    {
+                        //add to array
+                        cubes.push(scene.children[i]);
+                    }
+                }
+                return cubes;
+            }
+
+        }
+        window.onload = init;
+    </script>
+</body>
+
+</html>
