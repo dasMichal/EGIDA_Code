@@ -38,11 +38,14 @@
 
             // create a camera, which defines where we're looking at.
             var camera = new THREE.PerspectiveCamera(
-                45,
+                50,
                 window.innerWidth / window.innerHeight,
                 0.1,
                 1000
             );
+
+
+
 
             // create a render and set the size
             var renderer = new THREE.WebGLRenderer();
@@ -57,7 +60,8 @@
             var plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.receiveShadow = true;
 
-            // rotate and position the plane
+
+            //rotate and position the plane
             //make plane flat
             plane.rotation.x = -0.5 * Math.PI;
             plane.position.x = 0;
@@ -82,9 +86,57 @@
 
             // add spotlight for the shadows
             var spotLight = new THREE.SpotLight(0xffffff);
-            spotLight.position.set(-40, 60, -10);
+            spotLight.position.set(-40, 60, 10);
             spotLight.castShadow = true;
             scene.add(spotLight);
+
+
+            //create empty array for all the cubes
+            var cubes = [];
+
+            //var temp = createCube(3, 3, 3, 0, 1, 0, 0x00ff00);
+            var L_Leg = createCube(0.300, 1, 0.300, 0.509, 0.573, 0, 0xffffff);
+            var R_Leg = createCube(0.300, 1, 0.300, 0.857, 0.573, 0, 0xffffff);
+            var torso = createCube(1, 2.020, 0.400, 0.677, 1.608, 0, 0xffffff);
+            torso.scale.x = 0.64;
+            torso.scale.y = 0.50;
+            torso.scale.z = 1;
+            //var head = createCube(0.500, 0.500, 0.500, 0.667, 2.410, 0, 0xffffff);
+            var head = createCube(0.500, 0.500, 0.500, 0, 1.5, 0, 0xffffff);
+
+
+            //var L_Arm = createCube(0.300, 0.640, 0.300, 0.119, 1.862, 0, 0xffffff);
+            var L_Arm = createCube(0.300, 0.640, 0.300, -0.7, 0.5, 0, 0xffffff);
+            //var L_lower_Arm = createCube(0.300, 0.5, 0.300, -0.180, 1.356, 0, 0xffffff);
+            var L_lower_Arm = createCube(0.300, 0.5, 0.300, 0, -0.5, 0, 0xffffff);
+            L_Arm.rotation.z = 18.34;
+            //L_lower_Arm.rotation.z = 18.34;
+
+            L_Arm.add(L_lower_Arm);
+
+            //var R_Arm = createCube(0.300, 0.640, 0.300, 1.237, 1.862, 0, 0xffffff);
+            var R_Arm = createCube(0.300, 0.640, 0.300, 0.7, 0.5, 0, 0xffffff);
+            //var R_lower_Arm = createCube(0.300, 0.5, 0.300, 1.590, 1.323, 0, 0xffffff);
+            var R_lower_Arm = createCube(0.300, 0.5, 0.300, 0, -0.5, 0, 0xffffff);
+            R_Arm.rotation.z = -18.34;
+            //R_lower_Arm.rotation.z = -18.34;
+
+            R_Arm.add(R_lower_Arm);
+
+
+            torso.add(L_Arm);
+            torso.add(R_Arm);
+            torso.add(head);
+
+
+            //create sphere
+            var sphereCenter = createSphere(0.200, 0.200, 0.200, 0.676, 1.641, 0, 0xffffff);
+
+
+            //add to array
+            //cubes.push(temp);
+            console.log(cubes);
+            console.log(scene.children);
 
             // add the output of the renderer to the html element
             document
@@ -92,8 +144,7 @@
                 .appendChild(renderer.domElement);
 
             // call the render function
-            var step = 0;
-
+            var step = 0.5;
 
 
 
@@ -101,16 +152,51 @@
             {
                 this.ambientColor = "#0c0c0c";
                 this.spotLightColor = "#ffffff";
-                this.cameraX = -15;
-                this.cameraY = 5;
-                this.cameraZ = 19;
+
+                this.cameraX = 0.5;
+                this.cameraY = 2;
+                this.cameraZ = 6;
+
+                //camera look at center of scene
+                this.lookX = 0;
+                this.lookY = 0;
+                this.lookZ = 0;
+                this.L_Arm_X = 0;
+                this.L_Arm_Y = 0;
+                this.L_Arm_Z = 0;
+
+                this.L_lower_Arm_X = 0;
+                this.L_lower_Arm_Y = 0;
+                this.L_lower_Arm_Z = 0;
+
+                this.R_Arm_X = 0;
+                this.R_Arm_Y = 0;
+                this.R_Arm_Z = 0;
+
+                this.R_lower_Arm_X = 0;
+                this.R_lower_Arm_Y = 0;
+                this.R_lower_Arm_Z = 0;
+
+                this.torso_X = 0;
+                this.torso_Y = 0;
+                this.torso_Z = 0;
+
+                this.L_Leg_X = 0;
+                this.L_Leg_Y = 0;
+                this.L_Leg_Z = 0;
+
+                this.R_Leg_X = 0;
+                this.R_Leg_Y = 0;
+                this.R_Leg_Z = 0;
+
+
+
 
 
             })();
 
-            //create empty array for all the cubes
-            var cubes = [];
-            
+
+
 
             var gui = new dat.GUI();
             gui.addColor(controls, "ambientColor");
@@ -118,32 +204,39 @@
             gui.add(controls, "cameraX", -100, 100);
             gui.add(controls, "cameraY", -100, 100);
             gui.add(controls, "cameraZ", -100, 100);
-            var text =
-            {
-                speed: 'someName'
-            }
-            gui.add(text, 'speed', cubes);
+            gui.add(controls, "lookX", -Math.PI * 2, Math.PI * 2).step(0.5);;
+            gui.add(controls, "lookY", -Math.PI * 2, Math.PI * 2).step(0.5);;
+            gui.add(controls, "lookZ", -Math.PI * 2, Math.PI * 2).step(0.5);;
+            gui.add(controls, "L_Arm_X", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_Arm_Y", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_Arm_Z", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_lower_Arm_X", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_lower_Arm_Y", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_lower_Arm_Z", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_Arm_X", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_Arm_Y", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_Arm_Z", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_lower_Arm_X", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_lower_Arm_Y", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_lower_Arm_Z", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "torso_X", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "torso_Y", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "torso_Z", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_Leg_X", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_Leg_Y", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "L_Leg_Z", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_Leg_X", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_Leg_Y", 0, Math.PI * 2).step(0.1);
+            gui.add(controls, "R_Leg_Z", 0, Math.PI * 2).step(0.1);
 
-            var temp = createCube(3, 3, 3,0,1,0, 0x00ff00);
-            
-            //add to array
-            cubes.push(temp);
-            camera.lookAt(temp.position);
-        
+
+
+
+
+
             render();
-            console.log(scene.children);
 
 
-
-            //get objec mouse is over
-            function getObjects(x, y, camera, renderer)
-            {
-                var vector = new THREE.Vector3(x, y, 0.5);
-                vector.unproject(camera);
-                var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-                var intersects = ray.intersectObjects(scene.children);
-                return intersects;
-            }
 
 
 
@@ -151,18 +244,61 @@
             function render()
             {
                 stats.update();
-                camera.lookAt(temp.position);
-                
+                spotLight.lookAt(sphereCenter.position);
+                //camera.lookAt(sphereCenter.position);
+                //camera look at center of scene
+                camera.lookAt(new THREE.Vector3(controls.lookX, controls.lookY, controls.lookZ));
                 //change the color of the ambient light
                 ambientLight.color = new THREE.Color(controls.ambientColor);
-
                 //change the color of the spot light
                 spotLight.color = new THREE.Color(controls.spotLightColor);
+
 
                 //change the position of the camera
                 camera.position.x = controls.cameraX;
                 camera.position.y = controls.cameraY;
                 camera.position.z = controls.cameraZ;
+
+                //L_Arm Rotations
+                L_Arm.rotation.x = controls.L_Arm_X;
+                L_Arm.rotation.y = controls.L_Arm_Y;
+                L_Arm.rotation.z = controls.L_Arm_Z;
+                L_lower_Arm.rotation.x = controls.L_lower_Arm_X;
+                L_lower_Arm.rotation.y = controls.L_lower_Arm_Y;
+                L_lower_Arm.rotation.z = controls.L_lower_Arm_Z;
+
+                //R_Arm Rotations
+                R_Arm.rotation.x = controls.R_Arm_X;
+                R_Arm.rotation.y = controls.R_Arm_Y;
+                R_Arm.rotation.z = controls.R_Arm_Z;
+                R_lower_Arm.rotation.x = controls.R_lower_Arm_X;
+                R_lower_Arm.rotation.y = controls.R_lower_Arm_Y;
+                R_lower_Arm.rotation.z = controls.R_lower_Arm_Z;
+
+                //Torso Rotations
+                torso.rotation.x = controls.torso_X;
+                torso.rotation.y = controls.torso_Y;
+                torso.rotation.z = controls.torso_Z;
+
+                //L_Leg Rotations
+                L_Leg.rotation.x = controls.L_Leg_X;
+                L_Leg.rotation.y = controls.L_Leg_Y;
+                L_Leg.rotation.z = controls.L_Leg_Z;
+
+                //R_Leg Rotations
+                R_Leg.rotation.x = controls.R_Leg_X;
+                R_Leg.rotation.y = controls.R_Leg_Y;
+                R_Leg.rotation.z = controls.R_Leg_Z;
+
+                
+
+
+
+
+
+
+
+
 
                 // render using requestAnimationFrame
                 requestAnimationFrame(render);
@@ -187,12 +323,16 @@
 
 
             //function to Create Cube with Three.js
-            function createCube(size_x, size_y, size_z,position_x,position_y,position_z, color)
+            function createCube(size_x, size_y, size_z, position_x, position_y, position_z, color)
             {
                 var geometry = new THREE.BoxGeometry(size_x, size_y, size_z);
                 var material = new THREE.MeshLambertMaterial({ color: color });
                 var cube = new THREE.Mesh(geometry, material);
+
                 cube.castShadow = true;
+                //recive shadow
+                cube.receiveShadow = true;
+
                 //set position of cube
                 cube.position.x = position_x;
                 cube.position.y = position_y;
@@ -200,6 +340,27 @@
                 //add cube to scene
                 scene.add(cube);
                 return cube;
+            }
+
+            //function to Create Sphere with Three.js
+            function createSphere(size_x, size_y, size_z, position_x, position_y, position_z, color)
+            {
+                var geometry = new THREE.SphereGeometry(size_x, size_y, size_z);
+                var material = new THREE.MeshLambertMaterial({ color: color });
+                var sphere = new THREE.Mesh(geometry, material);
+
+
+                sphere.castShadow = true;
+                //recive shadow
+                sphere.receiveShadow = true;
+
+                //set position of sphere
+                sphere.position.x = position_x;
+                sphere.position.y = position_y;
+                sphere.position.z = position_z;
+                //add sphere to scene
+                scene.add(sphere);
+                return sphere;
             }
 
             //function return all cubes in scene
