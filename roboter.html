@@ -6,6 +6,7 @@
     <title>Assignment 2 Roboter</title>
     <script type="text/javascript" src="assets/js/libs2022/stats.js"></script>
     <script type="text/javascript" src="assets/js/libs2022/dat.gui.js"></script>
+    <script type="text/javascript" src="js/controls/OrbitControls.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <style>
@@ -35,6 +36,8 @@
 
             // create a scene, that will hold all our elements such as objects, cameras and lights.
             var scene = new THREE.Scene();
+            scene.castShadow = true;
+            scene.receiveShadow = true;
 
             // create a camera, which defines where we're looking at.
             var camera = new THREE.PerspectiveCamera(
@@ -43,9 +46,6 @@
                 0.1,
                 1000
             );
-
-
-
 
             // create a render and set the size
             var renderer = new THREE.WebGLRenderer();
@@ -60,7 +60,6 @@
             var plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.receiveShadow = true;
 
-
             //rotate and position the plane
             //make plane flat
             plane.rotation.x = -0.5 * Math.PI;
@@ -71,14 +70,10 @@
             // add the plane to the scene
             scene.add(plane);
 
-
             // position and point the camera to the center of the scene
-            camera.position.x = 0;
-            camera.position.y = 0;
-            camera.position.z = 0;
-
-            //camer look at center of scene
-            camera.lookAt(scene.position);
+            camera.position.x = 1;
+            camera.position.y = 3;
+            camera.position.z = -7.5;
 
             // add subtle ambient lighting
             var ambientLight = new THREE.AmbientLight(0x0c0c0c);
@@ -91,52 +86,79 @@
             scene.add(spotLight);
 
 
-            //create empty array for all the cubes
-            var cubes = [];
+
 
             //var temp = createCube(3, 3, 3, 0, 1, 0, 0x00ff00);
-            var L_Leg = createCube(0.300, 1, 0.300, 0.509, 0.573, 0, 0xffffff);
-            var R_Leg = createCube(0.300, 1, 0.300, 0.857, 0.573, 0, 0xffffff);
+            var R_Leg = createCube(0.300, 1, 0.300, 0.509, 0.573, 0, 0xffffff);
+            var L_Leg = createCube(0.300, 1, 0.300, 0.857, 0.573, 0, 0xffffff);
             var torso = createCube(1, 2.020, 0.400, 0.677, 1.608, 0, 0xffffff);
             torso.scale.x = 0.64;
             torso.scale.y = 0.50;
             torso.scale.z = 1;
-            //var head = createCube(0.500, 0.500, 0.500, 0.667, 2.410, 0, 0xffffff);
             var head = createCube(0.500, 0.500, 0.500, 0, 1.5, 0, 0xffffff);
 
 
-            //var L_Arm = createCube(0.300, 0.640, 0.300, 0.119, 1.862, 0, 0xffffff);
-            var L_Arm = createCube(0.300, 0.640, 0.300, -0.7, 0.5, 0, 0xffffff);
-            //var L_lower_Arm = createCube(0.300, 0.5, 0.300, -0.180, 1.356, 0, 0xffffff);
-            var L_lower_Arm = createCube(0.300, 0.5, 0.300, 0, -0.5, 0, 0xffffff);
-            L_Arm.rotation.z = 18.34;
-            //L_lower_Arm.rotation.z = 18.34;
+            var R_Arm = createCube(0.300, 0.640, 0.300, -0.7, 0.7, 0, 0x004db2);
+            var R_lower_Arm = createCube(0.300, 0.5, 0.300, 0, -0.5, 0, 0x006efe);
+            R_Arm.rotation.z = 18.34;
 
+
+
+            var L_Arm = createCube(0.300, 0.640, 0.300, 0.7, 0.7, 0, 0xd64e01);
+            var L_lower_Arm = createCube(0.300, 0.5, 0.300, 0, -0.5, 0, 0xff5c01);
+            L_Arm.rotation.z = -18.34;
+
+            //create helper objects for the arms
+            var R_Arm_Helper = createSphere(0.060, 0.060, 0.060, 0.345, 2.078, 0, 0xffffff);
+            var L_Arm_Helper = createSphere(0.060, 0.060, 0.060, 1.007, 2.078, 0, 0xffffff);
+            //visibility of helper objects
+            L_Arm_Helper.visible = false;
+            R_Arm_Helper.visible = false;
+
+
+            L_Arm_Helper.add(L_Arm);
+            torso.add(L_Arm);
             L_Arm.add(L_lower_Arm);
 
-            //var R_Arm = createCube(0.300, 0.640, 0.300, 1.237, 1.862, 0, 0xffffff);
-            var R_Arm = createCube(0.300, 0.640, 0.300, 0.7, 0.5, 0, 0xffffff);
-            //var R_lower_Arm = createCube(0.300, 0.5, 0.300, 1.590, 1.323, 0, 0xffffff);
-            var R_lower_Arm = createCube(0.300, 0.5, 0.300, 0, -0.5, 0, 0xffffff);
-            R_Arm.rotation.z = -18.34;
-            //R_lower_Arm.rotation.z = -18.34;
-
-            R_Arm.add(R_lower_Arm);
 
 
-            torso.add(L_Arm);
+            R_Arm_Helper.add(R_Arm);
             torso.add(R_Arm);
+            R_Arm.add(R_lower_Arm);
             torso.add(head);
 
 
             //create sphere
-            var sphereCenter = createSphere(0.200, 0.200, 0.200, 0.676, 1.641, 0, 0xffffff);
+            var sphereCenter = createSphere(0.060, 0.060, 0.060, 0.676, 1.741, 0, 0x1c3648);
 
 
-            //add to array
-            //cubes.push(temp);
-            console.log(cubes);
-            console.log(scene.children);
+
+            window.addEventListener("resize", resize, false);
+
+
+            // 3d mouse
+            document.addEventListener('mousedown', onMouseDown);
+            function onMouseDown(event)
+            {
+                console.log("mouse down");
+                event.preventDefault();// x
+                const mouse3D = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerheight) * 2 - 1, 0.5);
+                console.log(mouse3D);
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse3D, camera);
+                console.log(raycaster);
+                const intersects = raycaster.intersectObjects(objects); 
+                console.log(intersects);
+                if (intersects.length > 0)
+                {
+                    //console.log(intersects);
+                    //intersects[0].object.material.color.setHex(Math.random() * 0xffffff)
+                }
+            }
+
+
+
+
 
             // add the output of the renderer to the html element
             document
@@ -146,6 +168,27 @@
             // call the render function
             var step = 0.5;
 
+            const onChange = () =>
+            {
+                //light.target.updateMatrixWorld();
+                //helper.update();
+                //console.log("Yeet");
+            };
+            onChange();
+
+
+            const LightChange = () =>
+            {
+
+            };
+            LightChange();
+
+
+            const onMouseMove = () =>
+            {
+                console.log("Yeet");
+            };
+            onMouseMove();
 
 
             var controls = new (function ()
@@ -153,9 +196,8 @@
                 this.ambientColor = "#0c0c0c";
                 this.spotLightColor = "#ffffff";
 
-                this.cameraX = 0.5;
-                this.cameraY = 2;
-                this.cameraZ = 6;
+
+
 
                 //camera look at center of scene
                 this.lookX = 0;
@@ -195,40 +237,57 @@
 
             })();
 
-
+            var lookAtToggle =
+            {
+                switch: false
+            };
 
 
             var gui = new dat.GUI();
             gui.addColor(controls, "ambientColor");
             gui.addColor(controls, "spotLightColor");
-            gui.add(controls, "cameraX", -100, 100);
-            gui.add(controls, "cameraY", -100, 100);
-            gui.add(controls, "cameraZ", -100, 100);
-            gui.add(controls, "lookX", -Math.PI * 2, Math.PI * 2).step(0.5);;
-            gui.add(controls, "lookY", -Math.PI * 2, Math.PI * 2).step(0.5);;
-            gui.add(controls, "lookZ", -Math.PI * 2, Math.PI * 2).step(0.5);;
-            gui.add(controls, "L_Arm_X", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_Arm_Y", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_Arm_Z", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_lower_Arm_X", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_lower_Arm_Y", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_lower_Arm_Z", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_Arm_X", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_Arm_Y", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_Arm_Z", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_lower_Arm_X", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_lower_Arm_Y", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_lower_Arm_Z", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "torso_X", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "torso_Y", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "torso_Z", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_Leg_X", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_Leg_Y", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "L_Leg_Z", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_Leg_X", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_Leg_Y", 0, Math.PI * 2).step(0.1);
-            gui.add(controls, "R_Leg_Z", 0, Math.PI * 2).step(0.1);
+            makeXYZGUI(gui, camera.position, 'Camera Position', onChange);
 
+            var folder = gui.addFolder('SpotLight');
+            folder.add(spotLight.position, 'x', -100, 100).onChange(LightChange);
+            folder.add(spotLight.position, 'y', -100, 100).onChange(LightChange);
+            folder.add(spotLight.position, 'z', -100, 100).onChange(LightChange);
+            folder.add(spotLight.target.position, 'x', -10, 10).onChange(LightChange);
+            folder.add(spotLight.target.position, 'y', 0, 10).onChange(LightChange);
+            folder.add(spotLight.target.position, 'z', -10, 10).onChange(LightChange);
+            folder.open();
+            var folder = gui.addFolder('Camera Look At');
+            folder.add(lookAtToggle, "switch").name("Look at?");
+            folder.add(controls, "lookX", -Math.PI * 2, Math.PI * 2).step(0.5);
+            folder.add(controls, "lookY", -Math.PI * 2, Math.PI * 2).step(0.5);
+            folder.add(controls, "lookZ", -Math.PI * 2, Math.PI * 2).step(0.5);
+            folder.open();
+            folder = gui.addFolder('Right Arm');
+            folder.add(controls, "R_Arm_X", 0, 4).step(0.1);
+            folder.add(controls, "R_Arm_Y", -1, 1).step(0.1);
+            folder.add(controls, "R_Arm_Z", -3, 0).step(0.1);
+            folder.add(controls, "R_lower_Arm_X", 0, Math.PI * 2).step(0.1);
+            folder.add(controls, "R_lower_Arm_Y", 0, Math.PI * 2).step(0.1);
+            folder.add(controls, "R_lower_Arm_Z", 0, Math.PI * 2).step(0.1);
+            folder = gui.addFolder('Left Arm ');
+            folder.add(controls, "L_Arm_X", 0, 4).step(0.1);
+            folder.add(controls, "L_Arm_Y", -1, 1).step(0.1);
+            folder.add(controls, "L_Arm_Z", 0, 3).step(0.1);
+            folder.add(controls, "L_lower_Arm_X", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder.add(controls, "L_lower_Arm_Y", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder.add(controls, "L_lower_Arm_Z", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder = gui.addFolder('Right Leg');
+            folder.add(controls, "R_Leg_X", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder.add(controls, "R_Leg_Y", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder.add(controls, "R_Leg_Z", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder = gui.addFolder('Left Leg');
+            folder.add(controls, "L_Leg_X", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder.add(controls, "L_Leg_Y", -Math.PI * 2, Math.PI * 2).step(0.1);
+            folder.add(controls, "L_Leg_Z", -Math.PI * 2, Math.PI * 2).step(0.1);
+
+            gui.add(controls, "torso_X", -Math.PI * 2, Math.PI * 2).step(0.1);
+            gui.add(controls, "torso_Y", -Math.PI * 2, Math.PI * 2).step(0.1);
+            gui.add(controls, "torso_Z", -Math.PI * 2, Math.PI * 2).step(0.1);
 
 
 
@@ -236,28 +295,22 @@
 
             render();
 
-
-
-
-
-
+            camera.lookAt(head.position);
             function render()
             {
                 stats.update();
-                spotLight.lookAt(sphereCenter.position);
-                //camera.lookAt(sphereCenter.position);
-                //camera look at center of scene
-                camera.lookAt(new THREE.Vector3(controls.lookX, controls.lookY, controls.lookZ));
+
+                if (lookAtToggle.switch)
+                {
+                    camera.lookAt(new THREE.Vector3(controls.lookX, controls.lookY, controls.lookZ));
+                }
+
+
                 //change the color of the ambient light
                 ambientLight.color = new THREE.Color(controls.ambientColor);
                 //change the color of the spot light
                 spotLight.color = new THREE.Color(controls.spotLightColor);
 
-
-                //change the position of the camera
-                camera.position.x = controls.cameraX;
-                camera.position.y = controls.cameraY;
-                camera.position.z = controls.cameraZ;
 
                 //L_Arm Rotations
                 L_Arm.rotation.x = controls.L_Arm_X;
@@ -289,15 +342,6 @@
                 R_Leg.rotation.x = controls.R_Leg_X;
                 R_Leg.rotation.y = controls.R_Leg_Y;
                 R_Leg.rotation.z = controls.R_Leg_Z;
-
-                
-
-
-
-
-
-
-
 
 
                 // render using requestAnimationFrame
@@ -380,6 +424,42 @@
                 }
                 return cubes;
             }
+
+            function makeXYZGUI(gui, vector3, name, onChangeFn)
+            {
+                const folder = gui.addFolder(name);
+                folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+                folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+                folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+                folder.open();
+            }
+
+            function makeLookATGUI(gui, vector3, name, onChangeFn)
+            {
+                const folder = gui.addFolder(name);
+                folder.add(vector3, 'x', -100, 100).onChange(onChangeFn);
+                folder.add(vector3, 'y', -100, 100).onChange(onChangeFn);
+                folder.add(vector3, 'z', -100, 100).onChange(onChangeFn);
+                folder.open();
+            }
+
+
+            //Create vector3 from x,y,z
+            function getVector(x, y, z)
+            {
+                var vector3 = new THREE.Vector3(x, y, z);
+                return vector3;
+            }
+
+            // resize function
+            function resize() 
+            {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+
 
         }
         window.onload = init;
